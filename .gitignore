@@ -1,0 +1,10 @@
+# 忽略包含同仁真實姓名、班表與薪資之 Excel 測試檔案（保護公務資安與個資）
+*.xlsx
+*.xls
+*.csv
+~$*.xlsx
+
+# 系統快取與暫存檔
+.DS_Store
+Thumbs.db
+*.log

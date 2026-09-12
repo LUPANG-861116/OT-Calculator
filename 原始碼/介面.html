@@ -1,0 +1,675 @@
+<title>超勤格轉換器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F4F5F2; --surface:#FFFFFF; --surface-2:#EEF0EC; --sunk:#E7EAE5;
+  --ink:#1C2321; --ink-2:#4A544F; --muted:#6E7A74; --line:#DCE1DB; --line-2:#C6CDC5;
+  --accent:#0B6B5E; --accent-ink:#08544A; --accent-wash:#E3EFEC; --accent-line:#9FC8C0;
+  --warn:#9C6300; --warn-wash:#F8EEDC; --warn-line:#DFC28A;
+  --alert:#A8342B; --alert-wash:#F8E7E5; --alert-line:#E0AFA9;
+  --info:#2C5A7A; --info-wash:#E5EDF3; --info-line:#A9C3D5;
+  --shadow:0 1px 2px rgba(28,35,33,.06), 0 10px 26px -16px rgba(28,35,33,.30);
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --ground:#121614; --surface:#1A201D; --surface-2:#222A26; --sunk:#0C100E;
+  --ink:#E9EDE9; --ink-2:#BAC4BE; --muted:#8B968F; --line:#2C342F; --line-2:#3C463F;
+  --accent:#5CBFAD; --accent-ink:#8AD8C9; --accent-wash:#173029; --accent-line:#2F5C52;
+  --warn:#DDA94A; --warn-wash:#332A17; --warn-line:#5C4A22;
+  --alert:#E28379; --alert-wash:#341F1C; --alert-line:#5E3630;
+  --info:#84B4D6; --info-wash:#18262F; --info-line:#2E4759;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  --ground:#121614; --surface:#1A201D; --surface-2:#222A26; --sunk:#0C100E;
+  --ink:#E9EDE9; --ink-2:#BAC4BE; --muted:#8B968F; --line:#2C342F; --line-2:#3C463F;
+  --accent:#5CBFAD; --accent-ink:#8AD8C9; --accent-wash:#173029; --accent-line:#2F5C52;
+  --warn:#DDA94A; --warn-wash:#332A17; --warn-line:#5C4A22;
+  --alert:#E28379; --alert-wash:#341F1C; --alert-line:#5E3630;
+  --info:#84B4D6; --info-wash:#18262F; --info-line:#2E4759;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:32px 22px 140px}
+
+/* ---------- masthead ---------- */
+.btn-home{font-family:inherit; font-size:13px; font-weight:600; padding:6px 14px; border-radius:8px;
+  border:1.5px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; transition:all .15s; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.btn-home:hover{background:var(--accent-wash); border-color:var(--accent); color:var(--accent-ink)}
+.masthead{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  padding-bottom:18px; border-bottom:2px solid var(--ink); margin-bottom:6px}
+h1{font-family:"Noto Serif TC",serif; font-weight:700; font-size:31px; line-height:1.2; margin:0;
+  letter-spacing:.01em; text-wrap:balance}
+.masthead p{margin:6px 0 0; color:var(--muted); font-size:14px; max-width:52ch}
+.org{font-size:11.5px; letter-spacing:.16em; color:var(--muted); text-transform:none;
+  font-weight:500; padding-bottom:4px; text-align:right; line-height:1.7}
+
+/* ---------- steps ---------- */
+.step{margin-top:38px}
+.step-head{display:flex; align-items:baseline; gap:11px; margin-bottom:14px}
+.step-num{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--accent);
+  border:1.5px solid var(--accent-line); background:var(--accent-wash);
+  width:24px; height:24px; border-radius:50%; display:grid; place-items:center; flex:none;
+  align-self:center}
+.step-head h2{font-family:"Noto Serif TC",serif; font-size:19px; font-weight:600; margin:0}
+.step-head .hint{color:var(--muted); font-size:13px; margin-left:auto}
+
+/* ---------- drop zones ---------- */
+.drops{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px}
+.drop{background:var(--surface); border:1.5px dashed var(--line-2); border-radius:var(--radius);
+  padding:18px 18px 16px; cursor:pointer; transition:border-color .15s, background .15s;
+  display:flex; flex-direction:column; gap:5px; min-height:112px; position:relative}
+.drop:hover,.drop:focus-visible{border-color:var(--accent); background:var(--accent-wash); outline:none}
+.drop.over{border-color:var(--accent); background:var(--accent-wash); border-style:solid}
+.drop.ok{border-style:solid; border-color:var(--accent-line); background:var(--surface)}
+.drop .dt{font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px}
+.drop .dd{color:var(--muted); font-size:13px}
+.drop .fname{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent-ink);
+  word-break:break-all; margin-top:2px}
+.tick{width:17px; height:17px; border-radius:50%; background:var(--accent); color:var(--surface);
+  display:none; place-items:center; font-size:11px; font-weight:700; flex:none}
+.drop.ok .tick{display:grid}
+
+/* ---------- status strip ---------- */
+.strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; margin-top:16px; box-shadow:var(--shadow)}
+.cellstat{background:var(--surface); padding:12px 14px}
+.cellstat .k{font-size:11px; letter-spacing:.1em; color:var(--muted); font-weight:500}
+.cellstat .v{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600; margin-top:2px;
+  font-variant-numeric:tabular-nums}
+.cellstat .v small{font-family:"Noto Sans TC",sans-serif; font-size:13px; font-weight:500; color:var(--ink-2)}
+.big-month{background:var(--accent-wash)}
+.big-month .v{color:var(--accent-ink)}
+
+/* ---------- controls ---------- */
+.controls{display:flex; gap:20px; flex-wrap:wrap; align-items:center; margin-top:14px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px}
+.controls .lg{font-size:12px; letter-spacing:.08em; color:var(--muted); font-weight:500}
+.ctrl-group{display:inline-flex; align-items:center; gap:8px}
+.ctrl-hint{font-size:13px; color:var(--muted); font-weight:500}
+#inpBaseHours{width:68px; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600;
+  text-align:center; padding:4px 2px; border-radius:7px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink)}
+#inpBaseHours:focus{outline:2px solid var(--accent); border-color:var(--accent)}
+label.radio{display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:14px}
+label.radio input{accent-color:var(--accent); width:15px; height:15px; margin:0}
+select{font-family:inherit; font-size:14px; padding:5px 9px; border-radius:7px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink)}
+
+.tip-card{background:var(--info-wash); border:1px solid var(--info-line); border-radius:var(--radius);
+  padding:10px 14px; margin-top:12px; display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--ink-2); line-height:1.55}
+.tip-icon{font-size:16px; line-height:1.2; flex:none}
+.tip-title{font-weight:700; color:var(--info); display:inline}
+
+/* ---------- Step 0 config & templates ---------- */
+.cfg-panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-top:14px; box-shadow:var(--shadow)}
+.cfg-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px; align-items:flex-start}
+.cfg-item{display:flex; flex-direction:column; gap:5px}
+.cfg-label{font-size:12.5px; font-weight:700; color:var(--ink-2); letter-spacing:.04em}
+.cfg-item input, .cfg-item select{font-family:"IBM Plex Mono","Noto Sans TC",sans-serif; font-size:14px; font-weight:600;
+  padding:6px 10px; border-radius:7px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink)}
+.cfg-item input:focus, .cfg-item select:focus{outline:2px solid var(--accent); border-color:var(--accent)}
+.cfg-hint{font-size:11.5px; color:var(--muted); line-height:1.4}
+.month-banner{margin-top:14px; padding:10px 14px; border-radius:8px; background:var(--accent-wash);
+  border:1px solid var(--accent-line); color:var(--accent-ink); font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.month-badge{background:var(--accent); color:#fff; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700}
+.tpl-bar{margin-top:14px; padding:12px 16px; border-radius:8px; background:var(--surface-2); border:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.btn-dl{font-family:inherit; font-size:13px; font-weight:600; padding:8px 15px; border-radius:7px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer; transition:all .15s;
+  display:inline-flex; align-items:center; gap:6px}
+.btn-dl:hover{border-color:var(--accent); color:var(--accent-ink); background:var(--accent-wash)}
+
+/* ---------- gong leave card & calc ---------- */
+.gong-card{background:var(--warn-wash); border:1.5px solid var(--warn-line); border-radius:var(--radius);
+  padding:14px 18px; margin-bottom:16px}
+.gong-item{background:var(--surface); border:1px solid var(--warn-line); border-radius:8px; padding:10px 14px; margin-top:8px; font-size:13px; line-height:1.55}
+.gong-item.ok{border-color:var(--accent-line); background:var(--surface)}
+.gong-calc-box{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-top:14px}
+.calc-row{display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:8px}
+.calc-res{font-family:"IBM Plex Mono",monospace; font-size:15px; font-weight:700; color:var(--accent-ink); margin-top:6px}
+
+/* ---------- generic panel ---------- */
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden}
+.panel-head{padding:12px 16px; border-bottom:1px solid var(--line); display:flex;
+  align-items:center; gap:10px; flex-wrap:wrap; background:var(--surface-2)}
+.panel-head h3{margin:0; font-size:14.5px; font-weight:700}
+.panel-head .sub{color:var(--muted); font-size:12.5px; margin-left:auto}
+
+/* ---------- mapping (horizontal spacious cards) ---------- */
+/* ---------- mapping (horizontal spacious cards, no text truncation) ---------- */
+.maps{display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:10px; padding:14px; background:var(--surface-2)}
+.map{background:var(--surface); padding:12px 14px; border:1px solid var(--line); border-radius:8px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; min-height:54px; transition:border-color .15s}
+.map:hover{border-color:var(--accent-line)}
+.map-left{display:flex; align-items:center; gap:10px; flex:1; min-width:0}
+.sym{font-family:"IBM Plex Mono","Noto Sans TC",monospace; font-size:13px; font-weight:700;
+  min-width:50px; height:32px; padding:0 8px; border-radius:6px; background:var(--sunk);
+  border:1px solid var(--line-2); display:grid; place-items:center; flex:none; white-space:nowrap}
+.sym.blank{color:var(--muted); font-style:normal; font-size:12px}
+.map .lbl{display:flex; flex-direction:column; gap:2px; min-width:0; flex:1}
+.map .lbl b{font-size:13px; font-weight:600; line-height:1.35; white-space:normal; word-break:break-word; overflow:visible}
+.map .lbl .lbl-cnt{font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+.map-right{display:flex; align-items:center; gap:8px; flex:none}
+.map input{width:56px; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:700;
+  text-align:center; padding:4px 2px; border-radius:6px; border:1px solid var(--line-2);
+  background:var(--surface); color:var(--ink); font-variant-numeric:tabular-nums}
+.map input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+.map.need{background:var(--warn-wash); border-color:var(--warn-line)}
+.map.need .sym{border-color:var(--warn-line)}
+.badge{font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:.04em; flex:none}
+.b-v{background:var(--accent-wash); color:var(--accent-ink); border:1px solid var(--accent-line)}
+.b-a{background:var(--warn-wash); color:var(--warn); border:1px solid var(--warn-line)}
+
+/* ---------- grid preview ---------- */
+.gridwrap{overflow-x:auto; overflow-y:auto; max-height:520px}
+table.grid{border-collapse:separate; border-spacing:0; font-size:12px; width:max-content; min-width:100%}
+table.grid th, table.grid td{border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding:0; text-align:center; font-weight:400}
+table.grid thead th{position:sticky; top:0; z-index:3; background:var(--surface-2);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500; color:var(--ink-2);
+  height:30px; min-width:26px; font-variant-numeric:tabular-nums}
+table.grid thead th.wk{color:var(--muted)}
+table.grid thead th.we{background:var(--sunk)}
+th.nm{position:sticky; left:0; z-index:2; background:var(--surface); text-align:left;
+  padding:0 8px 0 10px; min-width:175px; max-width:190px; font-weight:500; font-size:13px; height:27px}
+thead th.nm{z-index:4}
+th.nm .rk{font-size:10.5px; color:var(--muted); font-weight:400; margin-left:5px}
+.nm-row{display:flex; align-items:center; justify-content:space-between; gap:4px; width:100%}
+.nm-meta{display:flex; align-items:center; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.btn-ig{font-size:10.5px; font-weight:600; padding:1px 5px; border-radius:4px; cursor:pointer; flex:none;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--muted); transition:all .15s; line-height:1.2}
+.btn-ig:hover{background:var(--warn-wash); color:var(--warn); border-color:var(--warn-line)}
+.btn-ig.is-ignored{background:var(--alert-wash); color:var(--alert); border-color:var(--alert-line); font-weight:700}
+tr.ignored{background:var(--sunk); opacity:.42}
+tr.ignored th.nm{background:var(--surface-2)}
+tr.ignored td{color:var(--muted)}
+tr.ignored td.money{color:var(--muted)}
+td.d{font-family:"IBM Plex Mono",monospace; font-size:11px; font-variant-numeric:tabular-nums;
+  min-width:26px; height:27px; color:var(--muted)}
+td.on{background:var(--accent-wash); color:var(--accent-ink); font-weight:600}
+td.half{background:var(--warn-wash); color:var(--warn); font-weight:600}
+td.chg{box-shadow:inset 0 0 0 2px var(--alert); position:relative; z-index:1}
+td.sum{font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums;
+  min-width:52px; background:var(--surface-2); font-size:12px}
+tr.skip th.nm, tr.skip td{opacity:.42}
+tr.newly th.nm{border-left:3px solid var(--accent); padding-left:9px}
+
+/* ---------- leave inputs & summary in grid ---------- */
+td.inp-cell{padding:2px 4px; background:var(--surface); min-width:58px}
+td.inp-cell input{width:100%; max-width:50px; font-family:"IBM Plex Mono",monospace; font-size:12px;
+  font-weight:600; text-align:center; padding:3px 2px; border-radius:5px; border:1px solid var(--line-2);
+  background:var(--surface); color:var(--ink); font-variant-numeric:tabular-nums}
+td.inp-cell input:focus{outline:2px solid var(--accent); border-color:var(--accent)}
+td.inp-cell.has-warn{background:var(--warn-wash)}
+td.inp-cell.has-warn input{border-color:var(--warn); background:var(--surface)}
+td.inp-cell.audit-diff{background:var(--alert-wash)}
+td.inp-cell.audit-diff input{border-color:var(--alert); background:var(--alert-wash); color:var(--alert); font-weight:700}
+td.stat-cell{font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums;
+  min-width:62px; background:var(--surface-2); font-size:12px; padding:0 6px}
+td.stat-cell.claim-less{background:var(--warn-wash); color:var(--warn); font-weight:700}
+td.stat-cell.comp-limit-warn{background:var(--warn-wash); color:var(--warn); font-weight:700}
+td.stat-cell.audit-diff{box-shadow:inset 0 0 0 2px var(--alert) !important; background:var(--alert-wash) !important; color:var(--alert) !important; font-weight:700 !important}
+td.d.audit-diff{box-shadow:inset 0 0 0 2px var(--alert) !important; background:var(--alert-wash) !important; color:var(--alert) !important; font-weight:700 !important}
+td.d.flex-cell{background:#fef3c7 !important; border:1.5px solid #d97706 !important; color:#b45309 !important; font-weight:700 !important; position:relative}
+td.d.flex-cell::after{content:"⏰"; font-size:8px; position:absolute; top:0; right:1px; line-height:1}
+td.stat-cell.money{color:var(--accent-ink); min-width:68px}
+tr.is-hidden{display:none !important}
+
+/* ---------- interactive chips ---------- */
+.chip{display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:6px; font-size:12.5px;
+  font-weight:600; background:var(--surface); border:1.5px solid var(--line-2); color:var(--ink);
+  cursor:pointer; transition:all .15s; user-select:none; margin:2px}
+.chip:hover{border-color:var(--accent)}
+.chip.active{background:var(--alert-wash); border-color:var(--alert-line); color:var(--alert)}
+.chip input[type="checkbox"]{accent-color:var(--alert); width:14px; height:14px; margin:0; cursor:pointer}
+.chip-del{margin-left:2px; font-size:11px; color:var(--muted); cursor:pointer; padding:0 4px; border-radius:3px; font-weight:700}
+.chip-del:hover{background:var(--alert); color:#fff}
+
+.alert-card{background:var(--warn-wash); border:1.5px solid var(--warn-line); border-radius:var(--radius);
+  padding:14px 18px; margin-bottom:16px; display:flex; gap:12px; align-items:flex-start}
+.alert-icon{font-size:20px; line-height:1; flex:none}
+.alert-title{font-weight:700; color:var(--warn); font-size:14.5px; margin-bottom:4px}
+.alert-desc{font-size:13px; color:var(--ink-2); line-height:1.55}
+.badge-uncounted{font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:4px;
+  background:var(--warn-wash); color:var(--warn); border:1px solid var(--warn-line); margin-left:4px}
+
+/* ---------- findings ---------- */
+.finds{display:flex; flex-direction:column}
+.find{display:flex; gap:12px; padding:11px 16px; border-bottom:1px solid var(--line); align-items:flex-start}
+.find:last-child{border-bottom:none}
+.find .tag{font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:5px; flex:none;
+  margin-top:2px; letter-spacing:.03em; white-space:nowrap}
+.t-stop{background:var(--alert-wash); color:var(--alert); border:1px solid var(--alert-line)}
+.t-check{background:var(--warn-wash); color:var(--warn); border:1px solid var(--warn-line)}
+.t-note{background:var(--info-wash); color:var(--info); border:1px solid var(--info-line)}
+.find .body{flex:1; min-width:0; font-size:13.5px; line-height:1.55}
+.find .body b{font-weight:700}
+.find .who{font-family:"IBM Plex Mono","Noto Sans TC",monospace; font-size:12px; color:var(--muted); display:block; margin-top:2px}
+.empty{padding:26px 16px; text-align:center; color:var(--muted); font-size:13.5px}
+
+/* ---------- action bar ---------- */
+.bar{position:fixed; left:0; right:0; bottom:0; z-index:20; background:var(--surface);
+  border-top:1px solid var(--line-2); box-shadow:0 -8px 24px -18px rgba(0,0,0,.5)}
+.bar-in{max-width:1120px; margin:0 auto; padding:12px 22px; display:flex; align-items:center;
+  gap:16px; flex-wrap:wrap}
+.bar .msg{font-size:13px; color:var(--muted); flex:1; min-width:180px}
+.bar .msg strong{color:var(--ink); font-weight:700}
+button.go{font-family:inherit; font-size:15px; font-weight:700; padding:11px 24px; border-radius:9px;
+  border:none; background:var(--accent); color:#fff; cursor:pointer; transition:filter .15s;
+  display:inline-flex; align-items:center; gap:8px}
+button.go:hover:not(:disabled){filter:brightness(1.1)}
+button.go:disabled{background:var(--line-2); color:var(--muted); cursor:not-allowed}
+button.go:focus-visible{outline:2px solid var(--accent-ink); outline-offset:2px}
+button.ghost{font-family:inherit; font-size:13.5px; font-weight:500; padding:9px 15px; border-radius:8px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); cursor:pointer}
+button.ghost:hover{background:var(--surface-2); color:var(--ink)}
+
+/* ---------- misc ---------- */
+.note{font-size:13px; color:var(--muted); margin-top:10px; line-height:1.6}
+.note code{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--sunk);
+  padding:1px 5px; border-radius:4px; color:var(--ink-2)}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); padding:9px 16px;
+  border-top:1px solid var(--line); background:var(--surface-2)}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px;
+  vertical-align:-1px; border:1px solid var(--line-2)}
+/* ---------- floating calc button ---------- */
+.fab-calc{position:fixed; right:24px; bottom:76px; z-index:25; background:var(--surface);
+  border:1.5px solid var(--accent); color:var(--accent-ink); padding:8px 16px; border-radius:999px;
+  font-family:inherit; font-size:13px; font-weight:700; display:flex; align-items:center; gap:7px;
+  cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.18); transition:transform .15s, box-shadow .15s, background .15s}
+.fab-calc:hover{transform:translateY(-2px); background:var(--accent-wash); box-shadow:0 6px 20px rgba(0,0,0,0.22)}
+
+/* ---------- modal popup ---------- */
+.modal-overlay{position:fixed; top:0; left:0; right:0; bottom:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:16px}
+.modal-backdrop{position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,.55); backdrop-filter:blur(3px)}
+.modal-card{position:relative; z-index:1; background:var(--surface); border:1px solid var(--line-2);
+  border-radius:12px; box-shadow:0 18px 40px -10px rgba(0,0,0,.35); max-width:620px; width:100%;
+  max-height:90vh; display:flex; flex-direction:column; overflow:hidden; animation:modalPop .18s ease-out}
+@keyframes modalPop{from{opacity:0; transform:scale(0.96) translateY(8px)} to{opacity:1; transform:scale(1) translateY(0)}}
+.modal-head{padding:14px 18px; border-bottom:1px solid var(--line); background:var(--surface-2); display:flex; align-items:center; justify-content:space-between}
+.modal-close{background:transparent; border:1px solid var(--line-2); border-radius:6px; width:30px; height:30px;
+  font-size:16px; cursor:pointer; color:var(--muted); display:grid; place-items:center; transition:all .15s}
+.modal-close:hover{background:var(--warn-wash); border-color:var(--warn-line); color:var(--warn)}
+.modal-body{padding:16px 20px; overflow-y:auto; max-height:calc(90vh - 120px)}
+.modal-foot{padding:10px 18px; border-top:1px solid var(--line); background:var(--surface-2); display:flex; justify-content:flex-end}
+.hide{display:none !important}
+@media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <div style="margin-bottom:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button type="button" id="btnHome" class="btn-home" title="回到首頁（重置回未上傳檔案狀態）">
+          <span style="font-size:15px;">🏠</span> <span>回到首頁</span>
+        </button>
+        <button type="button" id="btnOpenCalc" class="btn-home" style="border-color:var(--accent-line); background:var(--accent-wash); color:var(--accent-ink);" title="開啟請假與本休折算試算小工具">
+          <span style="font-size:15px;">🧮</span> <span>本休試算小工具</span>
+        </button>
+      </div>
+      <h1>超勤格轉換器</h1>
+      <p>丟入輪休表與超勤清冊，自動把休宿符號換算成每日服勤時數並回填，公式與格式原封不動。</p>
+    </div>
+    <div class="org" id="unitOrgTitle">新北市政府消防局<br>第七救災救護大隊　南勢分隊</div>
+  </header>
+
+  <!-- STEP 0: 月份與基準設定 -->
+  <section class="step" style="margin-top:24px">
+    <div class="step-head">
+      <span class="step-num">0</span>
+      <h2>設定作業月份與公務工時</h2>
+      <span class="hint">先選定月份，工具自動校正清冊日期、星期與公假公式</span>
+    </div>
+    <div class="cfg-panel">
+      <div class="cfg-grid">
+        <div class="cfg-item">
+          <label class="cfg-label">民國年份</label>
+          <div class="cfg-row">
+            <select id="selYear">
+              <option value="114">114 年</option>
+              <option value="115" selected>115 年</option>
+              <option value="116">116 年</option>
+              <option value="117">117 年</option>
+            </select>
+          </div>
+          <span class="cfg-hint">可直接提前處理下個月超勤</span>
+        </div>
+
+        <div class="cfg-item">
+          <label class="cfg-label">作業月份</label>
+          <div class="cfg-row">
+            <select id="selMonth">
+              <option value="1">01 月</option>
+              <option value="2">02 月</option>
+              <option value="3">03 月</option>
+              <option value="4">04 月</option>
+              <option value="5">05 月</option>
+              <option value="6">06 月</option>
+              <option value="7">07 月</option>
+              <option value="8">08 月</option>
+              <option value="9">09 月</option>
+              <option value="10" selected>10 月</option>
+              <option value="11">11 月</option>
+              <option value="12">12 月</option>
+            </select>
+          </div>
+          <span class="cfg-hint" id="monthDaysHint">共 31 天（大月）</span>
+        </div>
+
+        <div class="cfg-item">
+          <label class="cfg-label">當月公務人員基準工時 (小時)</label>
+          <div class="cfg-row">
+            <input type="number" id="inpBaseHours" value="168" min="80" max="240" step="8">
+            <span style="font-weight:600;font-size:13px;color:var(--muted)">小時</span>
+          </div>
+          <span class="cfg-hint">手動填寫。平日颱風假請扣 8hr；假日遇颱風假不變</span>
+        </div>
+
+        <div class="cfg-item">
+          <label class="cfg-label">基準本休天數 (天)</label>
+          <div class="cfg-row">
+            <input type="number" id="inpBaseTri" value="18" min="10" max="25" step="1">
+            <span style="font-weight:600;font-size:13px;color:var(--muted)">天（▲）</span>
+          </div>
+          <span class="cfg-hint">小月預設 17 天，大月預設 18 天（影響公假檢核）</span>
+        </div>
+      </div>
+
+      <div class="month-banner" id="monthBanner">
+        <span class="month-badge" id="mbBadge">大月 31 天</span>
+        <span id="mbText">115 年 10 月共 31 天 · 10/01 星期四 · 請搭配使用「31 天空白清冊範本」</span>
+      </div>
+
+      <!-- 排除屏蔽人員名單 -->
+      <div style="margin-top:14px; padding:14px 18px; background:var(--surface); border:1.5px solid var(--line-2); border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px">🚫</span>
+            <strong style="font-size:14px; color:var(--ink);">人員屏蔽設定（長期借調／局本部／不在分隊同仁）</strong>
+            <span style="font-size:12px; color:var(--muted);">（被屏蔽人員將不填寫超勤，且不計入請領總額）</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="ghost" id="btnClearIgnored" style="padding:3px 10px; font-size:12px;">一鍵取消全部屏蔽</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <span style="font-size:12.5px; font-weight:700; color:var(--ink-2); display:block; margin-bottom:6px;">
+            目前已屏蔽人員清單（<span style="color:var(--alert)">點擊核取方塊 ✓ 或 ✕ 即可立即取消屏蔽</span>）：
+          </span>
+          <div id="ignoredChipContainer" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; min-height:30px;">
+            <!-- JS 動態生成人員 chip: [✓ 姓名 ✕] -->
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+          <input type="text" id="inpIgnoredNames" value="" placeholder="手動輸入欲屏蔽同仁姓名（多位可用逗號、頓號或空格分隔）" style="flex:1; font-size:13px; padding:7px 12px; border-radius:6px; border:1px solid var(--line-2); background:var(--surface-2); color:var(--ink); font-family:inherit;">
+          <button type="button" class="ghost" id="btnAddIgnored" style="padding:7px 14px; font-size:13px; font-weight:700;">＋新增屏蔽</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:10px;">
+          <label class="radio" style="font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-2);">
+            <input type="checkbox" id="chkHideIgnored" checked> 預覽表格中完全隱藏已屏蔽同仁列（取消勾選則顯示並標註灰色「已屏蔽」）
+          </label>
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:6px; line-height:1.55;">
+          💡 <b>取消屏蔽說明</b>：若欲恢復某位同仁（正常計算超勤），只需點擊上方名字旁的「<b>✓ 核取方塊</b>」或「<b>✕</b>」，或點「<b>一鍵取消全部屏蔽</b>」，系統就會立即解除屏蔽並重新計算！
+        </div>
+      </div>
+
+      <div class="tpl-bar">
+        <span style="font-size:13.5px;font-weight:700;color:var(--ink)">📥 空白清冊範本下載：</span>
+        <button type="button" class="btn-dl" id="btnDl30">📄 下載 30 天空白清冊（適用 4、6、9、11 月）</button>
+        <button type="button" class="btn-dl" id="btnDl31">📄 下載 31 天空白清冊（適用 1、3、5、7、8、10、12 月）</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">1</span>
+      <h2>丟入兩份檔案</h2>
+      <span class="hint">輪休表與超勤清冊，順序不拘</span>
+    </div>
+    <div class="drops">
+      <div class="drop" id="dropA" tabindex="0" role="button" aria-label="選擇輪休表檔案">
+        <div class="dt"><span class="tick">✓</span>輪休表</div>
+        <div class="dd" id="ddA">休宿表 ▲／休／公／超 那份</div>
+        <div class="fname" id="fnA"></div>
+      </div>
+      <div class="drop" id="dropB" tabindex="0" role="button" aria-label="選擇超勤清冊檔案">
+        <div class="dt"><span class="tick">✓</span>超勤清冊</div>
+        <div class="dd" id="ddB">要被回填的那份（會自動校正日期與星期）</div>
+        <div class="fname" id="fnB"></div>
+      </div>
+    </div>
+    <input type="file" id="fileA" accept=".xlsx,.xlsm" class="hide">
+    <input type="file" id="fileB" accept=".xlsx,.xlsm" class="hide">
+
+    <div class="strip hide" id="strip">
+      <div class="cellstat big-month"><div class="k">目標月份</div><div class="v" id="sMonth">—</div></div>
+      <div class="cellstat big-month"><div class="k">大月／小月</div><div class="v" id="sSize">—</div></div>
+      <div class="cellstat"><div class="k">輪休表天數</div><div class="v" id="sDaysA">—</div></div>
+      <div class="cellstat"><div class="k">超勤表日欄</div><div class="v" id="sDaysB">—</div></div>
+      <div class="cellstat"><div class="k">可對應人數</div><div class="v" id="sPeople">—</div></div>
+    </div>
+
+    <div class="controls hide" id="controls">
+      <div class="ctrl-group">
+        <span class="lg">檔案工作表</span>
+        <select id="selSheet"></select>
+      </div>
+      <div class="ctrl-group" id="grpExportScope">
+        <span class="lg">匯出範圍</span>
+        <select id="selExportScope">
+          <option value="current_only">僅目前月份（單一工作表）</option>
+          <option value="all_months">全部月份（批次轉換回填）</option>
+          <option value="current_keep_all">完整活頁簿（僅更新目前月份）</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <span class="lg">作業模式</span>
+        <label class="radio" title="上傳空白表，系統直接將輪休表數字填入"><input type="radio" name="scope" value="blank" checked>1. 空白表填入</label>
+        <label class="radio" title="如上傳的超勤表是有填入數字的，檢核與系統帶出數字是否有差異（有差異則標示出來，不動原檔）"><input type="radio" name="scope" value="audit">2. 檢核標示差異（不動原檔）</label>
+        <label class="radio" title="不管上傳者上傳的超勤表是有填過的還是空白的，一律以系統為主，並且不需要用紅字標示"><input type="radio" name="scope" value="all">3. 強制覆蓋重填</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step hide" id="step2">
+    <div class="step-head">
+      <span class="step-num">2</span>
+      <h2>核對符號換算</h2>
+      <span class="hint">數字可直接改，改完預覽即時更新</span>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>本月出現的符號</h3>
+        <span class="sub" id="mapSub"></span>
+      </div>
+      <div class="maps" id="maps"></div>
+      <div class="legend">
+        <span><span class="badge b-v">已驗證</span>　由 115/06–09 已填好的資料反推，結果一致</span>
+        <span><span class="badge b-a">請確認</span>　樣本不足或組合符號，請自行核對</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step hide" id="step3">
+    <div class="step-head">
+      <span class="step-num">3</span>
+      <h2>預覽與檢查</h2>
+      <span class="hint" id="prevHint"></span>
+    </div>
+
+    <!-- 服勤時數與超勤計算對照 表格（移至最前層，緊接步驟 2） -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>服勤時數與超勤計算對照</h3>
+        <span class="sub" id="gridSub"></span>
+      </div>
+      <div class="gridwrap"><table class="grid" id="grid"></table></div>
+      <div class="legend">
+        <span><i style="background:var(--accent-wash);border-color:var(--accent-line)"></i>上班</span>
+        <span><i style="background:#fef3c7;border-color:#d97706"></i>⏰ 彈性休息（時段扣除）</span>
+        <span><i style="background:var(--warn-wash);border-color:var(--warn-line)"></i>半天</span>
+        <span><i style="background:var(--surface)"></i>休假／不上班</span>
+        <span><i style="background:var(--warn-wash);border-color:var(--warn)"></i>請休/補休有特殊符號</span>
+        <span><i style="background:var(--alert-wash);border-color:var(--alert);border-width:2px;box-shadow:inset 0 0 0 1px var(--alert)"></i>紅框＝與輪休表不符（檢核差異）</span>
+        <span><span class="badge b-a" style="vertical-align:0">實報實銷</span> 支領時數依超勤時數計算（未領滿19,000）</span>
+        <span><span class="badge b-a" style="vertical-align:0">&gt;20hr</span> 超勤補休超過20小時（請安排彈性休息）</span>
+        <span><span class="badge" style="background:var(--alert-wash);color:var(--alert);border:1px solid var(--alert-line);vertical-align:0">已屏蔽 ✓</span> 點擊可取消屏蔽</span>
+        <span>左側綠線＝本次會填入的人</span>
+      </div>
+    </div>
+
+    <!-- 屏蔽人員狀態橫條 -->
+    <div id="shieldBanner" class="panel hide" style="margin-top:14px; margin-bottom:14px; padding:10px 16px; background:var(--surface); border-left:4px solid var(--alert); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:16px;">🚫</span>
+        <strong style="font-size:13px; color:var(--alert);">目前已屏蔽同仁（不計入超勤）：</strong>
+        <div id="step3ShieldChips" style="display:inline-flex; flex-wrap:wrap; gap:6px;"></div>
+      </div>
+      <div style="font-size:12px; color:var(--muted);">💡 點擊核取方塊 ✓ 即可取消屏蔽、立即納入超勤計算</div>
+    </div>
+
+    <!-- 特殊假別與本休天數檢核卡片 -->
+    <div id="gongAlert" class="gong-card hide" style="margin-top:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:20px">📋</span>
+        <strong style="font-size:15px;color:var(--warn)">特殊假別（公/喪/產/病/事/婚/家）與應休本休天數（▲）檢核結果</strong>
+      </div>
+      <div style="font-size:13px;color:var(--ink-2);margin-bottom:10px;line-height:1.55">
+        規定：輪休表中凡出現非「休」、「心」、「超」、彈性休息時間之特殊假別均列出核對。其中公假（含受訓）、病假、喪假、產假／陪產假<strong>依公務人員休假原則計算</strong>：週五至週一間夾帶之六日例假日及國定假日（公務人員本即放假，輪休表常以 ▲ 表示）視為連續串接。連續請假<strong>超過 7 天（8 天以上）</strong>時，方依比例折算應休本休天數：<code>(基準本休 / 當月天數) × (當月天數 - 請假天數)</code>（四捨五入）；<strong>未符合連續超過 7 天原則者（含 7 天以內或零星分散請假），一律維持基準應休天數（小月 17 天、大月 18 天）</strong>。全月公假受訓隨班休假者，依公務人員班表作息，外勤應休本休為 0 天。已屏蔽人員自動排除檢核。
+      </div>
+      <div id="gongList"></div>
+    </div>
+
+    <div id="uncountedAlert" class="alert-card hide" style="margin-top:14px">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">發現輪休表公式未計入的假別符號（共 <span id="uncountedCount">0</span> 處）</div>
+        <div class="alert-desc" id="uncountedDesc">
+          以下同仁的儲存格含有彈性上班或組合符號，輪休表原檔 COUNTIF 無法統計，原表請休/補休時數可能少算。已在下方表格中將其「請休/補休」欄位標記黃底，請直接在格內核對或微調數字。
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-head">
+        <h3>檢查結果</h3>
+        <span class="sub" id="findSub"></span>
+      </div>
+      <div class="finds" id="finds"></div>
+    </div>
+  </section>
+
+  <p class="note" id="footnote">
+    換算與回填規則：輪休表空白格＝上班＝<code>22</code> 小時；<code>▲</code>、<code>休</code>、<code>公</code>、<code>超</code> 等整天不上班＝<code>0</code>；
+    <code>超○</code> 這類半天符號＝<code>10</code>。工具會回填每日服勤時數、E 欄請休時數、F 欄補休時數，並自動設定支領時數公式（超勤時數小於上限時以超勤時數為主，實報實銷），開檔後 Excel 會自動重算金額。
+  </p>
+</div>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="msg" id="barMsg">先把兩份檔案丟進上面的框裡。</div>
+    <div class="bar-export-scope hide" id="barExportScopeWrap" style="display:flex; align-items:center; gap:6px;">
+      <span style="font-size:13px; font-weight:600; color:var(--ink-2); white-space:nowrap;">匯出範圍：</span>
+      <select id="barSelExportScope" style="font-family:inherit; font-size:13px; font-weight:500; padding:6px 10px; border-radius:7px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer;">
+        <option value="current_only">僅目前月份（單一工作表）</option>
+        <option value="all_months">全部月份（批次轉換回填）</option>
+        <option value="current_keep_all">完整活頁簿（僅更新目前月份）</option>
+      </select>
+    </div>
+    <button class="go" id="btnGo" disabled>匯出超勤檔</button>
+  </div>
+</div>
+
+<!-- 懸浮試算小工具按鈕（點開即彈出，平時不佔版面） -->
+<button type="button" id="btnFabCalc" class="fab-calc" title="點開請假與應休本休試算小工具" aria-label="本休試算小工具">
+  <span style="font-size:16px;">🧮</span>
+  <span>本休試算</span>
+</button>
+
+<!-- 請假與本休折算試算獨立彈出視窗（Modal） -->
+<div id="calcModal" class="modal-overlay hide" role="dialog" aria-modal="true" aria-labelledby="calcModalTitle">
+  <div class="modal-backdrop" id="calcModalBackdrop"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:22px;">🧮</span>
+        <div>
+          <h3 id="calcModalTitle" style="margin:0; font-size:15px; font-weight:700; color:var(--ink);">請假與應休本休（▲）即時試算工具</h3>
+          <span style="font-size:12px; color:var(--muted);">隨時點開查詢公/病/喪/產假之本休折算，不影響正在處理的檔案</span>
+        </div>
+      </div>
+      <button type="button" class="modal-close" id="btnCloseCalc" title="關閉視窗" aria-label="關閉視窗">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="cfg-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:14px;">
+        <div class="cfg-item">
+          <label class="cfg-label" for="modalDays">當月天數</label>
+          <select id="modalDays" style="font-family:'IBM Plex Mono',monospace; font-weight:700;">
+            <option value="31">31 天（大月）</option>
+            <option value="30">30 天（小月）</option>
+            <option value="28">28 天（平年2月）</option>
+            <option value="29">29 天（閏年2月）</option>
+          </select>
+        </div>
+        <div class="cfg-item">
+          <label class="cfg-label" for="modalBaseTri">基準本休 (天)</label>
+          <input type="number" id="modalBaseTri" value="18" min="10" max="25" step="1" style="font-family:'IBM Plex Mono',monospace; font-weight:700; text-align:center;">
+        </div>
+        <div class="cfg-item">
+          <label class="cfg-label" for="modalGongDays">請假天數合計</label>
+          <input type="number" id="modalGongDays" value="8" min="0" max="31" step="1" style="font-family:'IBM Plex Mono',monospace; font-weight:700; text-align:center;">
+        </div>
+      </div>
+
+      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px;">
+        <label class="radio" style="font-size:13.5px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="modalIsContinuous" checked>
+          <span>符合「<strong>連續且超過 7 天（8 天以上）</strong>」原則（未勾選或散假＝不折算，維持基準本休）</span>
+        </label>
+        <label class="radio" style="font-size:13.5px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="modalCrossMon" checked>
+          <span>跨週公假（週一至週五公假且隔週一請休，六日納入合計以 <strong>7 天</strong>計）</span>
+        </label>
+      </div>
+
+      <div id="modalCalcOutput" style="background:var(--surface); border:1.5px solid var(--accent-line); border-radius:8px; padding:14px 16px; font-size:13px; line-height:1.65;">
+        <!-- JS 即時計算結果 -->
+      </div>
+
+      <div style="margin-top:14px; padding:10px 14px; background:var(--info-wash); border:1px solid var(--info-line); border-radius:6px; font-size:12px; color:var(--ink-2); line-height:1.6;">
+        💡 <b>規定核對重點</b>：
+        <ul style="margin:4px 0 0 18px; padding:0;">
+          <li><b>折算公式</b>：<code>(基準本休 ÷ 當月天數) × (當月天數 - 請假天數)</code>，四捨五入取整數。</li>
+          <li><b>連續 8 天以上門檻</b>：公假、受訓、病假、喪假、產假／陪產假<strong>必須連續且超過 7 天（即 8 天以上）</strong>方進行本休折算。</li>
+          <li><b>零星請假或 ≤ 7 天</b>：林維新 4 天陪產假、劉軒翔 5 天喪假等，因未滿 8 天或未連續，<strong>本休全額維持（小月 17 天、大月 18 天）</strong>。</li>
+          <li><b>隔週一請休</b>：週一至週五公假受訓，隔週一若請休（非超休），連同六日以 7 天累計。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="go" id="btnDoneCalc" style="padding:8px 22px; font-size:14px;">關閉視窗</button>
+    </div>
+  </div>
+</div>

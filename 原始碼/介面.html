@@ -50,17 +50,17 @@ body{
 }
 .wrap{max-width:1200px; margin:0 auto; padding:32px 22px 140px}
 
-/* ---------- 2-Column Home Layout ---------- */
-.home-cols{display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:22px; align-items:start}
+/* ---------- Step 1 + Changelog 2-Column Layout ---------- */
+.step1-cols{display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:22px; align-items:start; margin-top:28px}
 @media (max-width:992px){
-  .home-cols{grid-template-columns:1fr; gap:16px}
+  .step1-cols{grid-template-columns:1fr; gap:16px}
   .changelog-card{position:static !important; max-height:none !important}
 }
 
 /* ---------- 歷屆更新資訊 Card ---------- */
 .changelog-card{
   background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius);
-  padding:16px 18px 18px; box-shadow:var(--shadow); position:sticky; top:18px; margin-top:24px;
+  padding:16px 18px 18px; box-shadow:var(--shadow); position:sticky; top:18px; margin-top:0;
   transition:outline .2s, box-shadow .2s;
 }
 .changelog-card.highlight-panel{
@@ -162,22 +162,33 @@ select{font-family:inherit; font-size:14px; padding:5px 9px; border-radius:7px;
 
 /* ---------- Step 0 config & templates ---------- */
 .cfg-panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-top:14px; box-shadow:var(--shadow)}
-.cfg-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px; align-items:flex-start}
+.cfg-grid{display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px; align-items:flex-start}
 .cfg-item{display:flex; flex-direction:column; gap:5px}
-.cfg-label{font-size:12.5px; font-weight:700; color:var(--ink-2); letter-spacing:.04em}
+.cfg-label{font-size:12.5px; font-weight:700; color:var(--ink-2); letter-spacing:.04em; white-space:nowrap}
+.cfg-row{display:flex; align-items:center; gap:8px; flex-wrap:nowrap}
 .cfg-item input, .cfg-item select{font-family:"IBM Plex Mono","Noto Sans TC",sans-serif; font-size:14px; font-weight:600;
   padding:6px 10px; border-radius:7px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink)}
 .cfg-item input:focus, .cfg-item select:focus{outline:2px solid var(--accent); border-color:var(--accent)}
 .cfg-hint{font-size:11.5px; color:var(--muted); line-height:1.4}
+@media (max-width:860px){
+  .cfg-grid{grid-template-columns:repeat(2, minmax(0, 1fr))}
+}
+@media (max-width:520px){
+  .cfg-grid{grid-template-columns:1fr}
+}
 .month-banner{margin-top:14px; padding:10px 14px; border-radius:8px; background:var(--accent-wash);
   border:1px solid var(--accent-line); color:var(--accent-ink); font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
 .month-badge{background:var(--accent); color:#fff; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700}
 .tpl-bar{margin-top:14px; padding:12px 16px; border-radius:8px; background:var(--surface-2); border:1px solid var(--line);
-  display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  display:flex; align-items:center; gap:14px; flex-wrap:nowrap}
+.tpl-bar > span{white-space:nowrap; flex:none}
 .btn-dl{font-family:inherit; font-size:13px; font-weight:600; padding:8px 15px; border-radius:7px;
   border:1px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer; transition:all .15s;
-  display:inline-flex; align-items:center; gap:6px}
+  display:inline-flex; align-items:center; gap:6px; white-space:nowrap; flex:none}
 .btn-dl:hover{border-color:var(--accent); color:var(--accent-ink); background:var(--accent-wash)}
+@media (max-width:960px){
+  .tpl-bar{flex-wrap:wrap}
+}
 
 /* ---------- gong leave card & calc ---------- */
 .gong-card{background:var(--warn-wash); border:1.5px solid var(--warn-line); border-radius:var(--radius);
@@ -378,9 +389,6 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
     <div class="org" id="unitOrgTitle">新北市政府消防局<br>第七救災救護大隊　南勢分隊</div>
   </header>
 
-  <div class="home-cols">
-    <div class="home-main">
-
   <!-- STEP 0: 月份與基準設定 -->
   <section class="step" style="margin-top:24px">
     <div class="step-head">
@@ -493,8 +501,11 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
     </div>
   </section>
 
+  <div class="step1-cols">
+    <div class="step1-main">
+
   <!-- STEP 1 -->
-  <section class="step">
+  <section class="step" style="margin-top:0">
     <div class="step-head">
       <span class="step-num">1</span>
       <h2>丟入兩份檔案</h2>
@@ -545,9 +556,9 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
     </div>
   </section>
 
-    </div><!-- /.home-main -->
+    </div><!-- /.step1-main -->
 
-    <aside class="home-aside">
+    <aside class="step1-aside">
       <!-- 歷屆更新資訊 Card -->
       <div class="changelog-card" id="changelogPanel">
         <div class="changelog-head">
@@ -639,7 +650,7 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
         </div>
       </div>
     </aside>
-  </div><!-- /.home-cols -->
+  </div><!-- /.step1-cols -->
 
   <!-- STEP 2 -->
   <section class="step hide" id="step2">

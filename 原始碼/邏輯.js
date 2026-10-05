@@ -2198,6 +2198,18 @@ wireDrop($("dropB"), $("fileB"), "B");
 const btnHome = $("btnHome");
 if(btnHome) btnHome.addEventListener("click", resetToHome);
 
+const btnChangelog = $("btnChangelog");
+if(btnChangelog){
+  btnChangelog.addEventListener("click", () => {
+    const el = $("changelogPanel");
+    if(el){
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.add("highlight-panel");
+      setTimeout(() => el.classList.remove("highlight-panel"), 1500);
+    }
+  });
+}
+
 $("selYear").addEventListener("change", () => updateMonthConfig(true));
 $("selMonth").addEventListener("change", () => updateMonthConfig(true));
 

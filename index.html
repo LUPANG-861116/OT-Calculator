@@ -54,7 +54,47 @@ body{
   font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1120px; margin:0 auto; padding:32px 22px 140px}
+.wrap{max-width:1200px; margin:0 auto; padding:32px 22px 140px}
+
+/* ---------- 2-Column Home Layout ---------- */
+.home-cols{display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:22px; align-items:start}
+@media (max-width:992px){
+  .home-cols{grid-template-columns:1fr; gap:16px}
+  .changelog-card{position:static !important; max-height:none !important}
+}
+
+/* ---------- 歷屆更新資訊 Card ---------- */
+.changelog-card{
+  background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius);
+  padding:16px 18px 18px; box-shadow:var(--shadow); position:sticky; top:18px; margin-top:24px;
+  transition:outline .2s, box-shadow .2s;
+}
+.changelog-card.highlight-panel{
+  outline:3px solid var(--accent); box-shadow:0 0 20px var(--accent-line);
+}
+.changelog-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding-bottom:10px; border-bottom:1px solid var(--line)}
+.changelog-head h3{margin:0; font-family:"Noto Serif TC",serif; font-size:16px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:7px}
+.ver-badge{font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-wash); border:1px solid var(--accent-line); padding:2px 7px; border-radius:999px; letter-spacing:.02em}
+.changelog-sub{font-size:12px; color:var(--muted); margin-top:6px; margin-bottom:12px; line-height:1.4}
+.changelog-body{max-height:520px; overflow-y:auto; padding-right:6px}
+.changelog-body::-webkit-scrollbar{width:5px}
+.changelog-body::-webkit-scrollbar-thumb{background:var(--line-2); border-radius:4px}
+.changelog-body::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+.timeline{position:relative; padding-left:18px}
+.timeline::before{content:""; position:absolute; left:5px; top:8px; bottom:8px; width:2px; background:var(--line-2)}
+.tl-item{position:relative; margin-bottom:18px}
+.tl-item:last-child{margin-bottom:4px}
+.tl-dot{position:absolute; left:-18px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--surface); border:2px solid var(--muted); box-sizing:border-box}
+.tl-item.current .tl-dot{border-color:var(--accent); background:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.tl-header{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px}
+.tl-ver{font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:700; color:var(--ink)}
+.tl-item.current .tl-ver{color:var(--accent-ink)}
+.tl-date{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted)}
+.tl-title{font-size:13px; font-weight:700; color:var(--ink-2); margin-bottom:5px; line-height:1.4}
+.tl-list{margin:0; padding-left:16px; font-size:12px; color:var(--ink-2); line-height:1.6}
+.tl-list li{margin-bottom:4px}
+.tl-list li:last-child{margin-bottom:0}
+.tl-list b{color:var(--ink)}
 
 /* ---------- masthead ---------- */
 .btn-home{font-family:inherit; font-size:13px; font-weight:600; padding:6px 14px; border-radius:8px;
@@ -336,12 +376,18 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
         <button type="button" id="btnOpenCalc" class="btn-home" style="border-color:var(--accent-line); background:var(--accent-wash); color:var(--accent-ink);" title="開啟請假與本休折算試算小工具">
           <span style="font-size:15px;">🧮</span> <span>本休試算小工具</span>
         </button>
+        <button type="button" id="btnChangelog" class="btn-home" title="查看系統歷屆更新資訊">
+          <span style="font-size:15px;">📋</span> <span>歷屆更新資訊</span>
+        </button>
       </div>
       <h1>🚒 超勤格轉換器</h1>
       <p>丟入輪休表與超勤清冊，自動把休宿符號換算成每日服勤時數並回填，公式與格式原封不動。</p>
     </div>
     <div class="org" id="unitOrgTitle">新北市政府消防局<br>第七救災救護大隊　南勢分隊</div>
   </header>
+
+  <div class="home-cols">
+    <div class="home-main">
 
   <!-- STEP 0: 月份與基準設定 -->
   <section class="step" style="margin-top:24px">
@@ -506,6 +552,102 @@ button.ghost:hover{background:var(--surface-2); color:var(--ink)}
       </div>
     </div>
   </section>
+
+    </div><!-- /.home-main -->
+
+    <aside class="home-aside">
+      <!-- 歷屆更新資訊 Card -->
+      <div class="changelog-card" id="changelogPanel">
+        <div class="changelog-head">
+          <h3><span>📋</span> 歷屆更新資訊</h3>
+          <span class="ver-badge">v1.4 最新</span>
+        </div>
+        <div class="changelog-sub">掌握系統最新功能發布與法規規則校正歷程</div>
+
+        <div class="changelog-body">
+          <div class="timeline">
+
+            <!-- Item v1.4 -->
+            <div class="tl-item current">
+              <div class="tl-dot"></div>
+              <div class="tl-header">
+                <span class="tl-ver">v1.4 最新版本</span>
+                <span class="tl-date">115.10.05</span>
+              </div>
+              <div class="tl-title">名冊編制全面更新 & 大小月清冊範本校正</div>
+              <ul class="tl-list">
+                <li><b>名冊編制同步</b>：依據 115 年 10 月最新編制更新為 41 人，同仁俸點、本俸及主管/專業加給全面校正。</li>
+                <li><b>空白範本校正</b>：重新生成 30 天與 31 天標準空白清冊，修復底端合計列（第 86 列）加總公式與國字大寫金額參照。</li>
+                <li><b>範本一鍵下載</b>：首頁提供全新動態空白清冊下載，點擊即下載最新 41 人範本。</li>
+              </ul>
+            </div>
+
+            <!-- Item v1.3 -->
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-header">
+                <span class="tl-ver">v1.3</span>
+                <span class="tl-date">115.09.18</span>
+              </div>
+              <div class="tl-title">雲端部署上線 & 視覺識別優化</div>
+              <ul class="tl-list">
+                <li><b>Vercel 雲端上線</b>：串接 GitHub 自動部署，支援行動裝置與跨平台免安裝直接使用。</li>
+                <li><b>專屬視覺識別</b>：加入南勢消防車 Favicon、專屬縮圖與 Open Graph 社群預覽卡片。</li>
+                <li><b>首頁重置機制</b>：新增頂端「回到首頁」功能，一鍵重置清空並回到未上傳狀態。</li>
+              </ul>
+            </div>
+
+            <!-- Item v1.2 -->
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-header">
+                <span class="tl-ver">v1.2</span>
+                <span class="tl-date">115.09.14</span>
+              </div>
+              <div class="tl-title">假別法規檢核 & 本休試算小工具</div>
+              <ul class="tl-list">
+                <li><b>連續公假折算判定</b>：支援公假連續超過 7 天（8 天以上，含夾帶例假日）之本休折算規則，散假全額維持本休（小月 17 天、大月 18 天）。</li>
+                <li><b>特定假別回補</b>：身心調適假、喪假、產假/陪產假自動認定回補 8 小時。</li>
+                <li><b>長期借調人員屏蔽</b>：支援自訂長期借調或局本部同仁屏蔽，不列入超勤請領並隨時可取消。</li>
+                <li><b>本休試算小工具</b>：內建彈出式試算視窗，即時試算特殊假別天數與應休本休折算。</li>
+              </ul>
+            </div>
+
+            <!-- Item v1.1 -->
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-header">
+                <span class="tl-ver">v1.1</span>
+                <span class="tl-date">115.09.11</span>
+              </div>
+              <div class="tl-title">三大作業模式 & 批次多月份轉換</div>
+              <ul class="tl-list">
+                <li><b>三大作業模式</b>：支援「1. 空白表填入」、「2. 檢核標示差異（紅框標註）」與「3. 強制覆蓋重填」。</li>
+                <li><b>跨月份批次處理</b>：支援全部月份活頁簿自動掃描、單一月份回填或完整活頁簿保留。</li>
+                <li><b>標準公文命名</b>：自動辨識單位與分隊名稱，匯出檔名全自動符合公務標準。</li>
+              </ul>
+            </div>
+
+            <!-- Item v1.0 -->
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-header">
+                <span class="tl-ver">v1.0</span>
+                <span class="tl-date">115.09.07</span>
+              </div>
+              <div class="tl-title">超勤格轉換核心引擎首發</div>
+              <ul class="tl-list">
+                <li><b>核心換算技術</b>：自動將外勤輪休表符號精準換算為每日服勤時數（22/10/0hr）。</li>
+                <li><b>100% 離線純前端運算</b>：完全於瀏覽器端執行，同仁個資與薪資絕不上傳，公務資安有保障。</li>
+                <li><b>公式完整保留</b>：時數總和、時薪、超勤金額與合計公式原封不動保留，Excel 開檔自動計算。</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div><!-- /.home-cols -->
 
   <!-- STEP 2 -->
   <section class="step hide" id="step2">
@@ -2913,6 +3055,18 @@ wireDrop($("dropB"), $("fileB"), "B");
 
 const btnHome = $("btnHome");
 if(btnHome) btnHome.addEventListener("click", resetToHome);
+
+const btnChangelog = $("btnChangelog");
+if(btnChangelog){
+  btnChangelog.addEventListener("click", () => {
+    const el = $("changelogPanel");
+    if(el){
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.add("highlight-panel");
+      setTimeout(() => el.classList.remove("highlight-panel"), 1500);
+    }
+  });
+}
 
 $("selYear").addEventListener("change", () => updateMonthConfig(true));
 $("selMonth").addEventListener("change", () => updateMonthConfig(true));
